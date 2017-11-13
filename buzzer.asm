@@ -1,4 +1,3 @@
-; Created: 11/6/2017
 ; Author: Prangon Ghose
 
 
