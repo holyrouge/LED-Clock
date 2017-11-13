@@ -1,4 +1,3 @@
-; Created: 11/13/2017
 ; Author: Prangon Ghose
 
 ; create two variables for ticks and secs
