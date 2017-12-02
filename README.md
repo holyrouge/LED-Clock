@@ -1,5 +1,3 @@
-# LED Clock
-
 # Overview
 This repository is includes the code I created to program an electronic LED clock.
 
