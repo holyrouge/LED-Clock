@@ -104,7 +104,7 @@ display:
 	rcall delay_21k ; delay
 	sbi portb, 6 ; turns off the LEDs
 
-	out portd, r22 ; sends ones digit segement values to portd for output
+	out portd, r22 ; sends ones digit segment values to portd for output
 	cbi portb, 7 ; delay
 	rcall delay_21k ; delay
 	sbi portb, 7; turns off the LEDs
