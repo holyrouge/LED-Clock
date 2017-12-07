@@ -15,17 +15,24 @@ clr hrs
 
 // setup ports
 setup:
-	ldi r20,0b00000011 ; 1 for output pins, 0 for inputs
-	out ddrc, r20 ; program pc0 and pc1 as outputs
+	.include "tn48def.inc"
 
-	ldi r20,0xff ; load 11111111 in r20
-	out ddrd, r20 ; program all of portd as outputs
-
-	ldi r16,0xfe ;turn pnp transistors off, pullups on
+	// setup portb
+	ldi r16,0xff ;turn pnp transistors off, pullups on
 	out portb,r16
-
 	ldi r16,0b11000111
 	out ddrb,r16
+
+	// setup portc
+	ldi r16,0b01111100 ;enable pullups, set speaker and led off
+	out portc,r16
+	ldi r16,0b00000011
+	out ddrc,r16
+	
+	// setup portd
+	ldi r16,0b11111111 ;set all pins as output, initialize high
+	out portd,r16
+	out ddrd,r16
 
 
 // Loop
@@ -44,8 +51,13 @@ add_secs:
 	clr ticks ; if ticks and 60 are equal, clear value of ticks
 	inc secs ; increment of secs
 
+	rcall button_inc ; calls buttons function to check if buttons inc is pressed and do instructions if it is pressed
+
+	rcall button_set ; calls buttons function to check if button set is pressed and do instructions if it is pressed
+
 	cpi secs, 60 ; check to see if the value of secs is 60
 	breq add_mins ; if secs equal to 60, go to add_mins
+
 	rjmp display ; go to display
 
 add_mins: 
@@ -54,6 +66,7 @@ add_mins:
 
 	cpi mins, 60 ; check to see if the value of mins is 60
 	breq add_hrs ; if mins equal to 60, go to add_hrs
+	
 	rjmp display ; go to display
 
 add_hrs:
@@ -62,6 +75,7 @@ add_hrs:
 	
 	cpi hrs, 24 ; check to see if the value of hrs is 24 
 	brne display ; if not, display
+	
 	clr hrs ; if hrs equal to 24, clear hrs and then move on to display
 
 // display output as LEDs
@@ -104,7 +118,7 @@ display:
 	rcall delay_21k ; delay
 	sbi portb, 6 ; turns off the LEDs
 
-	out portd, r22 ; sends ones digit segment values to portd for output
+	out portd, r22 ; sends ones digit segement values to portd for output
 	cbi portb, 7 ; delay
 	rcall delay_21k ; delay
 	sbi portb, 7; turns off the LEDs
@@ -166,7 +180,7 @@ delay_loop:				; a label for the brne instruction
 
     ret                 ;return. The microcontroller 'remembers' where it came from
 
-// Singular delay loop for the dimming of the seconds counter LEDs
+// singular delay loop for the dimming of the seconds counter LEDs
 delay_1k:
 	clr r29             ; initialize register 31 (this can be any unused register)
 
@@ -183,3 +197,35 @@ seg_table:
 	.dw 0xcb11				;7,6
 	.dw 0x4101				;9,8
 	.dw 0x00ff				;on,off
+
+// instructions for if the inc button is pressed 
+button_inc:
+	sbis pinb, 4 ; check if the inc button is pressed by seeing if portb, 4 is clear (set = pressed).
+	ret ; return to add_secs if set
+
+	clr secs ; clear seconds
+	inc mins ; increments minutes
+
+	cpi mins, 60 ; check to see if the value of mins is 60
+	breq clr_mins ; reset mins if mins = 60
+	ret
+
+clr_mins:
+	clr mins
+	ret
+
+
+// instructions for if the set buttons is pressed
+button_set:
+	sbis pinb, 5 ; check if the inc button is pressed by seeing if portb, 5 is clear (set = pressed).
+	ret ; return to add_secs if set
+
+	inc hrs ; increments hours
+
+	cpi hrs, 24 ; check to see if the value of hrs = 24
+	breq clr_hrs ; reset mins if hrs = 24
+	ret
+
+clr_hrs:
+	clr hrs
+	ret
